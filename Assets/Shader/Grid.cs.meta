@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: d5e6bae9844a5794f9e1ed0e23360d7d
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - gridShader: {fileID: 4800000, guid: 13b27db4e9f0a4440806f5b78c1a4e6e, type: 3}
+  - depthOnlyMat: {fileID: 2100000, guid: 11011b223178c0b4a8c0ec4780e6b385, type: 2}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
