@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
@@ -10,6 +11,9 @@ public class playerController : MonoBehaviour, IDamage
     [SerializeField] CharacterController characterController;
 
     [SerializeField] int HP;
+    [SerializeField] int mana;
+    [SerializeField] int manaRegenAmount;
+    [SerializeField] float manaRegenSeconds;
     [SerializeField] float speed;
     [SerializeField] float sprintMod;
     [SerializeField] int jumpSpeed;
@@ -21,7 +25,8 @@ public class playerController : MonoBehaviour, IDamage
     [SerializeField] float shootRate;
 
     int jumpCount;
-    int HPOrig;
+    public int HPOrig;
+    public int manaOrig;
 
     float shootTimer;
 
@@ -34,9 +39,17 @@ public class playerController : MonoBehaviour, IDamage
     [System.NonSerialized]
     public UnityEvent<bool> sprintChangeEvent;
 
+    [System.NonSerialized]
+    public UnityEvent<int> hpUpdatedEvent;
+    [System.NonSerialized]
+    public UnityEvent<int> manaUpdatedEvent;
+
+
     void Awake()
     {
         sprintChangeEvent = new UnityEvent<bool>();
+        hpUpdatedEvent = new UnityEvent<int>();
+        manaUpdatedEvent = new UnityEvent<int>();
     }
 
     public void takeDamage(int amount)
@@ -51,15 +64,33 @@ public class playerController : MonoBehaviour, IDamage
     void Start()
     {
         HPOrig = HP;
-
+        manaOrig = mana;
+        StartCoroutine(ManaRegen(manaRegenAmount, manaRegenSeconds));
     }
 
-    
+
     void Update()
     {
         Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * shootDist, Color.red);
         sprint();
         movement();
+
+        if (Input.GetButtonDown("Fire2")) {
+            TestHeal();
+        }
+        if (Input.GetButton("Fire1"))
+        {
+            HP -= 10;
+            hpUpdatedEvent.Invoke(HP);
+        }
+    }
+
+    void TestHeal()
+    {
+        mana -= 25;
+        HP = 100;
+        manaUpdatedEvent.Invoke(mana);
+        hpUpdatedEvent.Invoke(HP);
     }
 
     void movement()
@@ -98,17 +129,19 @@ public class playerController : MonoBehaviour, IDamage
 
     void sprint()
     {
-        if (Input.GetButtonDown("Sprint"))
+        if (Input.GetButton("Sprint") && playerVel != Vector3.zero && !isSprinting)
         {
             speed *= sprintMod;
             isSprinting= true;
+            sprintChangeEvent.Invoke(isSprinting);
         }
         else if (Input.GetButtonUp("Sprint"))
         {
             speed /= sprintMod;
             isSprinting= false;
+            sprintChangeEvent.Invoke(isSprinting);
         }
-        sprintChangeEvent.Invoke(isSprinting);
+        
     }
 
     void shoot()
@@ -125,5 +158,14 @@ public class playerController : MonoBehaviour, IDamage
                 dmg.takeDamage(shootDamage);
             } 
         }
+    }
+
+    IEnumerator ManaRegen(int regenAmount, float secondsToRegen)
+    {
+        mana += regenAmount;
+        mana = Mathf.Clamp(mana, 0, manaOrig);
+        manaUpdatedEvent.Invoke(mana);
+        yield return new WaitForSeconds(secondsToRegen);
+        StartCoroutine(ManaRegen(regenAmount, secondsToRegen));
     }
 }
