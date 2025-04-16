@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.EventSystems;
 
 public class playerController : MonoBehaviour, IDamage
 {
@@ -8,8 +10,8 @@ public class playerController : MonoBehaviour, IDamage
     [SerializeField] CharacterController characterController;
 
     [SerializeField] int HP;
-    [SerializeField] int speed;
-    [SerializeField] int sprintMod;
+    [SerializeField] float speed;
+    [SerializeField] float sprintMod;
     [SerializeField] int jumpSpeed;
     [SerializeField] int jumpMax;
     [SerializeField] int gravity;
@@ -26,7 +28,16 @@ public class playerController : MonoBehaviour, IDamage
     Vector3 moveDir;
     Vector3 playerVel;
 
-    bool isSprinting;
+    [System.NonSerialized]
+    public bool isSprinting;
+
+    [System.NonSerialized]
+    public UnityEvent<bool> sprintChangeEvent;
+
+    void Awake()
+    {
+        sprintChangeEvent = new UnityEvent<bool>();
+    }
 
     public void takeDamage(int amount)
     {
@@ -40,6 +51,7 @@ public class playerController : MonoBehaviour, IDamage
     void Start()
     {
         HPOrig = HP;
+
     }
 
     
@@ -86,13 +98,17 @@ public class playerController : MonoBehaviour, IDamage
 
     void sprint()
     {
-        /*if (Input.GetButtonDown("Sprint"))
+        if (Input.GetButtonDown("Sprint"))
         {
             speed *= sprintMod;
-        } else if (Input.GetButtonUp("Sprint"))
+            isSprinting= true;
+        }
+        else if (Input.GetButtonUp("Sprint"))
         {
             speed /= sprintMod;
-        }*/
+            isSprinting= false;
+        }
+        sprintChangeEvent.Invoke(isSprinting);
     }
 
     void shoot()
