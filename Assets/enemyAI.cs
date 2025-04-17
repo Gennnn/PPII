@@ -3,32 +3,36 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class enemyAI : MonoBehaviour, IDamage
+public class enemyAI : Enemy, IDamage
 {
     [SerializeField] Renderer model;
     [SerializeField] NavMeshAgent agent;
 
-    [SerializeField] int HP;
+    [SerializeField] BoxCollider attackCollider;
+
     [SerializeField] int faceTargetSpeed;
 
     [SerializeField] Transform shootPos;
     [SerializeField] GameObject bullet;
     [SerializeField] float shootRate;
 
-    float shootTimer;
-
     Color colorOrig;
 
     Vector3 playerDir;
 
+    float attackCounter = 0.0f;
+    public float attackSpeed = 0.7f;
+    public int damageAmount = 5;
+
     private void Start()
     {
+        model = GetComponent<Renderer>();
         colorOrig = model.material.color;
-        gameManager.instance.updateGameGoal(1);
     }
 
     void Update()
     {
+        attackCounter += Time.deltaTime;
         playerDir = (gameManager.instance.transform.position - transform.position);
         
         agent.SetDestination(gameManager.instance.player.transform.position);
@@ -38,22 +42,30 @@ public class enemyAI : MonoBehaviour, IDamage
             faceTarget();
         }
 
-        shootTimer += Time.deltaTime;
+        if (attackCollider.bounds.Intersects(gameManager.instance.playerScript.characterController.bounds) && attackCounter >= attackSpeed)
+        {
+            attackCounter = 0.0f;
+            gameManager.instance.playerScript.takeDamage(damageAmount);
+        }
+        
+
+        /*shootTimer += Time.deltaTime;
         if (shootTimer >= shootRate)
         {
             shoot();
 
-        }
+        }*/
     }
+
 
     public void takeDamage(int amount)
     {
-        HP -= amount;
+        health -= amount;
         StartCoroutine(flashRed());
 
-        if (HP <= 0 )
+        if (health <= 0 )
         {
-            gameManager.instance.updateGameGoal(-1);
+            WaveManager.instance.MobDeath();
             Destroy(gameObject);
         }
     }
@@ -65,11 +77,11 @@ public class enemyAI : MonoBehaviour, IDamage
         model.material.color = colorOrig;
     }
 
-    void shoot()
+    /*void shoot()
     {
         shootTimer = 0;
         Instantiate(bullet, shootPos.position, transform.rotation);
-    }
+    }*/
 
     void faceTarget()
     {

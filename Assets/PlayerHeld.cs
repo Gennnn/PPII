@@ -26,9 +26,9 @@ public class PlayerHeld : MonoBehaviour
 
     void SwapItem(int slot)
     {
-        items[currentHeldItem].enabled = false;
+        items[currentHeldItem].gameObject.SetActive(false);
         currentHeldItem = slot;
-        items[currentHeldItem].enabled = true;
+        items[currentHeldItem].gameObject.SetActive(true);
     }
 
     void Swing(int type)

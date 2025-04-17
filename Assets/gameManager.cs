@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class gameManager : MonoBehaviour
@@ -15,10 +16,19 @@ public class gameManager : MonoBehaviour
 
     public GameObject player;
     public playerController playerScript;
+    public WaveManager waveManager;
 
     float timeScaleOrig;
 
     int gameGoalCount;
+
+    public Round[] rounds;
+    int roundIndex = 0;
+    public TextMeshProUGUI roundNum;
+    public TextMeshProUGUI enemiesRemainingNum;
+    public TextMeshProUGUI enemiesRemainingLabel;
+
+    [SerializeField] int timeBetweenRounds = 30;
 
     void Awake()
     {
@@ -29,6 +39,53 @@ public class gameManager : MonoBehaviour
         timeScaleOrig = Time.timeScale;
     }
 
+    private void Start()
+    {
+        waveManager = WaveManager.instance;
+        waveManager.remainingEnemiesUpdated.AddListener(UpdateRemainingText);
+        waveManager.allMobsKilled.AddListener(MoveToNextRound);
+        waveManager.currentRound = rounds[0];
+        StartRoundAfterDelay(timeBetweenRounds);
+    }
+
+    private void OnDisable()
+    {
+        waveManager.allMobsKilled.RemoveListener(MoveToNextRound);
+        waveManager.remainingEnemiesUpdated.RemoveListener(UpdateRemainingText);
+    }
+
+    void MoveToNextRound()
+    {
+        roundIndex++;
+        StartRoundAfterDelay(timeBetweenRounds);
+    }
+
+    IEnumerator StartRoundAfterDelay(int delay)
+    {
+        enemiesRemainingLabel.text = "Next Round";
+        enemiesRemainingNum.text = delay.ToString();
+        StartCoroutine(UpdateTimeTilRoundDisplay(delay));
+        yield return new WaitForSeconds(delay);
+        waveManager.StartRound();
+        enemiesRemainingLabel.text = "Remaining";
+        
+    }
+
+    void UpdateRemainingText(int num)
+    {
+        enemiesRemainingNum.text = num.ToString();
+    }
+
+    IEnumerator UpdateTimeTilRoundDisplay(int delay)
+    {
+        yield return new WaitForSeconds(1);
+        delay--;
+        enemiesRemainingNum.text = delay.ToString();
+        if (delay > 0)
+        {
+            StartCoroutine(UpdateTimeTilRoundDisplay(delay));
+        }
+    }
     // Update is called once per frame
     void Update()
     {

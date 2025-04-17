@@ -8,7 +8,7 @@ using UnityEngine.EventSystems;
 public class playerController : MonoBehaviour, IDamage
 {
     public LayerMask ignoreLayer;
-    [SerializeField] CharacterController characterController;
+    public CharacterController characterController;
 
     [SerializeField] int HP;
     [SerializeField] int mana;
@@ -80,13 +80,27 @@ public class playerController : MonoBehaviour, IDamage
         Debug.DrawRay(Camera.main.transform.position, Camera.main.transform.forward * shootDist, Color.red);
         sprint();
         movement();
-
+        ItemSelection();
         if (Input.GetButtonDown("Fire2")) {
             playerSwing.Invoke(1);
         }
         if (Input.GetButton("Fire1"))
         {
             playerSwing.Invoke(0);
+        }
+    }
+
+    void ItemSelection()
+    {
+        if (Input.GetButtonDown("Slot1"))
+        {
+            swapSlot.Invoke(0);
+        } else if (Input.GetButtonDown("Slot2"))
+        {
+            swapSlot.Invoke(1);
+        } else if (Input.GetButtonDown("Slot3"))
+        {
+            swapSlot.Invoke(2);
         }
     }
 
