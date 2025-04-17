@@ -7,7 +7,7 @@ using UnityEngine;
 public class cameraController : MonoBehaviour
 {
     [SerializeField] int sens;
-    [SerializeField] int verticalSens;
+    [SerializeField] int horizontalSens;
     [SerializeField] int lockVertMin, lockVertMax;
     [SerializeField] bool invertY;
 
@@ -64,7 +64,7 @@ public class cameraController : MonoBehaviour
             child.localRotation = Quaternion.Euler(rotX, 0, 0);
             
         }
-        transform.Rotate(Vector3.up * mouseX * verticalSens * Time.deltaTime);
+        transform.Rotate(Vector3.up * mouseX * horizontalSens);
     }
 
     void AdjustCameraFOV(bool isSprinting)

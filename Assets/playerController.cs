@@ -7,7 +7,7 @@ using UnityEngine.EventSystems;
 
 public class playerController : MonoBehaviour, IDamage
 {
-    [SerializeField] LayerMask ignoreLayer;
+    public LayerMask ignoreLayer;
     [SerializeField] CharacterController characterController;
 
     [SerializeField] int HP;
@@ -44,12 +44,18 @@ public class playerController : MonoBehaviour, IDamage
     [System.NonSerialized]
     public UnityEvent<int> manaUpdatedEvent;
 
+    [System.NonSerialized]
+    public UnityEvent<int> playerSwing;
+    [System.NonSerialized]
+    public UnityEvent<int> swapSlot;
 
     void Awake()
     {
         sprintChangeEvent = new UnityEvent<bool>();
         hpUpdatedEvent = new UnityEvent<int>();
         manaUpdatedEvent = new UnityEvent<int>();
+        playerSwing = new UnityEvent<int>();
+        swapSlot = new UnityEvent<int>();
     }
 
     public void takeDamage(int amount)
@@ -76,12 +82,11 @@ public class playerController : MonoBehaviour, IDamage
         movement();
 
         if (Input.GetButtonDown("Fire2")) {
-            TestHeal();
+            playerSwing.Invoke(1);
         }
         if (Input.GetButton("Fire1"))
         {
-            HP -= 10;
-            hpUpdatedEvent.Invoke(HP);
+            playerSwing.Invoke(0);
         }
     }
 
@@ -147,17 +152,7 @@ public class playerController : MonoBehaviour, IDamage
     void shoot()
     {
         shootTimer = 0;
-        RaycastHit hit;
-        if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, shootDist, ~ignoreLayer))
-        {
-            Debug.Log(hit.collider.name);
-            IDamage dmg = hit.collider.GetComponent<IDamage>();
-
-            if (dmg != null)
-            {
-                dmg.takeDamage(shootDamage);
-            } 
-        }
+        
     }
 
     IEnumerator ManaRegen(int regenAmount, float secondsToRegen)

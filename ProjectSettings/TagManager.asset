@@ -8,16 +8,16 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - Grid
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - GridEffect
+  - Enemy
+  - EnemyBullet
+  - PlayerBullet
+  - Hazards
+  - PlayerGate
+  - EnemyGate
   - 
   - 
   - 
