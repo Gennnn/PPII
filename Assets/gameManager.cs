@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -45,7 +46,8 @@ public class gameManager : MonoBehaviour
         waveManager.remainingEnemiesUpdated.AddListener(UpdateRemainingText);
         waveManager.allMobsKilled.AddListener(MoveToNextRound);
         waveManager.currentRound = rounds[0];
-        StartRoundAfterDelay(timeBetweenRounds);
+        roundNum.text = "1/" + rounds.Length;
+        StartCoroutine(StartRoundAfterDelay(timeBetweenRounds));
     }
 
     private void OnDisable()
@@ -57,7 +59,13 @@ public class gameManager : MonoBehaviour
     void MoveToNextRound()
     {
         roundIndex++;
-        StartRoundAfterDelay(timeBetweenRounds);
+        if (roundIndex == rounds.Length)
+        {
+            win();
+            return;
+        }
+        roundNum.text = (roundIndex + 1) + "/" + rounds.Length;
+        StartCoroutine(StartRoundAfterDelay(timeBetweenRounds));
     }
 
     IEnumerator StartRoundAfterDelay(int delay)
@@ -68,12 +76,15 @@ public class gameManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
         waveManager.StartRound();
         enemiesRemainingLabel.text = "Remaining";
-        
+        enemiesRemainingNum.text = rounds[roundIndex].GetTotalEnemiesInWave().ToString();
+
     }
 
     void UpdateRemainingText(int num)
     {
-        enemiesRemainingNum.text = num.ToString();
+        int curr = Int32.Parse(enemiesRemainingNum.text);
+        curr -= num;
+        enemiesRemainingNum.text = curr.ToString();
     }
 
     IEnumerator UpdateTimeTilRoundDisplay(int delay)
@@ -81,7 +92,7 @@ public class gameManager : MonoBehaviour
         yield return new WaitForSeconds(1);
         delay--;
         enemiesRemainingNum.text = delay.ToString();
-        if (delay > 0)
+        if (delay > 1)
         {
             StartCoroutine(UpdateTimeTilRoundDisplay(delay));
         }
@@ -131,6 +142,13 @@ public class gameManager : MonoBehaviour
             menuActive = menuWin;
             menuActive.SetActive(true);
         }
+    }
+
+    public void win()
+    {
+        statePause();
+        menuActive = menuWin;
+        menuActive.SetActive(true);
     }
 
     public void youLose()

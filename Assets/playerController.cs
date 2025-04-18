@@ -61,6 +61,7 @@ public class playerController : MonoBehaviour, IDamage
     public void takeDamage(int amount)
     {
         HP -= amount;
+        hpUpdatedEvent.Invoke(HP);
         if (HP <= 0)
         {
             gameManager.instance.youLose();

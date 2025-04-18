@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class enemyAI : Enemy, IDamage
+public class archerAI : Enemy, IDamage
 {
     [SerializeField] Renderer model;
     [SerializeField] NavMeshAgent agent;
@@ -14,12 +14,11 @@ public class enemyAI : Enemy, IDamage
     public string runAnimName = "Zombie_Running";
     public string attackAnimName = "Zombie_Attack";
 
-    [SerializeField] BoxCollider attackCollider;
-
     [SerializeField] int faceTargetSpeed;
 
     [SerializeField] Transform shootPos;
     [SerializeField] GameObject bullet;
+    public float shootRange = 300.0f;
     [SerializeField] float shootRate;
 
     [SerializeField] ParticleSystem hitParticles;
@@ -29,7 +28,7 @@ public class enemyAI : Enemy, IDamage
     Vector3 playerDir;
 
     float attackCounter = 0.0f;
-    public float attackSpeed = 0.7f;
+    public float attackSpeed = 2.0f;
     public int damageAmount = 5;
 
     private void Start()
@@ -56,30 +55,23 @@ public class enemyAI : Enemy, IDamage
         {
             ChangeAnimationState(idleAnimName);
         }
-
-        if (attackCollider.bounds.Intersects(gameManager.instance.playerScript.characterController.bounds) && attackCounter >= attackSpeed)
-        {
-            attackCounter = 0.0f;
-            ChangeAnimationState(attackAnimName);
-            StartCoroutine(AttemptAttack());
-        }
         
 
-        /*shootTimer += Time.deltaTime;
-        if (shootTimer >= shootRate)
+        attackCounter += Time.deltaTime;
+        if (attackCounter >= attackSpeed)
         {
-            shoot();
-
-        }*/
+            AttemptAttack();
+        }
     }
 
-    IEnumerator AttemptAttack()
+    void AttemptAttack()
     {
-        yield return new WaitForSeconds(0.2f);
-        if (attackCollider.bounds.Intersects(gameManager.instance.playerScript.characterController.bounds))
+        RaycastHit hit;
+        LayerMask mask = (1 << 3);
+        if (Physics.Raycast(transform.position, transform.forward, out hit, shootRange, mask))
         {
-            attackCounter = 0.0f;
-            gameManager.instance.playerScript.takeDamage(damageAmount);
+            attackCounter = 0;
+            shoot();
         }
     }
 
@@ -104,11 +96,11 @@ public class enemyAI : Enemy, IDamage
         model.material.color = colorOrig;
     }
 
-    /*void shoot()
+    void shoot()
     {
-        shootTimer = 0;
-        Instantiate(bullet, shootPos.position, transform.rotation);
-    }*/
+        attackCounter = 0;
+        Instantiate(bullet, shootPos.transform.position, transform.rotation);
+    }
 
     void faceTarget()
     {

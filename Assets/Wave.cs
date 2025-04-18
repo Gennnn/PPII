@@ -10,15 +10,9 @@ public class Wave : ScriptableObject
     public float delayBetweenEnemies = 0.5f;
     public int spawnLocation = 0;
 
-    public Enemy GetNextEnemy()
+    public Enemy GetEnemy(int i)
     {
-        if (currentEnemy >= enemies.Length)
-        {
-            return null;
-        }
-        Enemy retEnemy = enemies[currentEnemy];
-        currentEnemy++;
-        return retEnemy;
+        return enemies[i];
     }
 
     public int GetEnemyCount()

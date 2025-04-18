@@ -32,7 +32,9 @@ public class Sword : Item
                 idleCoroutine = StartCoroutine(ReturnToIdle());
             }
             RaycastHit hit;
-            if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, swingRange, ~gameManager.instance.playerScript.ignoreLayer))
+            LayerMask mask = gameManager.instance.playerScript.ignoreLayer;
+            mask |= (1 << 2);
+            if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, swingRange, ~mask))
             {
                 Debug.Log(hit.collider.name);
                 IDamage dmg = hit.collider.GetComponent<IDamage>();

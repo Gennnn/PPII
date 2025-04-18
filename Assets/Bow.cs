@@ -47,31 +47,40 @@ public class Bow : Item
             swingCooldown = 0.0f;
             ChangeAnimationState(idleAnimationName);
             for (int i = 0; i < chargeLvl; i++) {
-                RaycastHit hit;
-                if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, maxRange, ~gameManager.instance.playerScript.ignoreLayer))
-                {
-                    Debug.Log(hit.collider.name);
-
-                    LineRenderer line = Instantiate(bolt);
-                    Color startColor = particleColors[i];
-                    Color endColor = new Color(1, 1, 1, 0.0f);
-                    line.SetPosition(0, Camera.main.transform.position);
-                    line.SetPosition(1, hit.point);
-
-                    line.DOColor(new Color2(startColor, startColor), new Color2(endColor,endColor), 0.5f).SetEase(Ease.Linear).OnComplete(() =>
-                    {
-                        Destroy(line);
-                    });
-                    chargeLvl--;
-                    IDamage dmg = hit.collider.GetComponent<IDamage>();
-
-                    if (dmg != null)
-                    {
-                        dmg.takeDamage(damage);
-                    }
-                }
+                StartCoroutine(DoShot(i));
             }
         }
+    }
+
+    IEnumerator DoShot(int num)
+    {
+        yield return new WaitForSeconds(shotSpacing * num);
+        RaycastHit hit;
+        LayerMask mask = gameManager.instance.playerScript.ignoreLayer;
+        mask |= (1 << 2);
+        if (Physics.Raycast(Camera.main.transform.position, Camera.main.transform.forward, out hit, maxRange, ~mask))
+        {
+            Debug.Log(hit.collider.name);
+
+            LineRenderer line = Instantiate(bolt);
+            Color startColor = particleColors[num];
+            Color endColor = new Color(1, 1, 1, 0.0f);
+            line.SetPosition(0, Camera.main.transform.position);
+            line.SetPosition(1, hit.point);
+
+            line.DOColor(new Color2(startColor, startColor), new Color2(endColor, endColor), 0.5f).SetEase(Ease.Linear).OnComplete(() =>
+            {
+                Destroy(line);
+            });
+            chargeLvl--;
+            IDamage dmg = hit.collider.GetComponent<IDamage>();
+
+            if (dmg != null)
+            {
+                dmg.takeDamage(damage);
+            }
+        }
+        
     }
 
 

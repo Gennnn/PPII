@@ -72,7 +72,7 @@ public class WaveManager : MonoBehaviour
     {
         for (int i = 0; i < wave.GetEnemyCount(); i++)
         {
-            SpawnMob(wave.GetNextEnemy(), wave.spawnLocation, i * wave.delayBetweenEnemies);
+            StartCoroutine(SpawnMob(wave.GetEnemy(i), wave.spawnLocation, i * wave.delayBetweenEnemies));
             currentWaveMobs++;
             
         }
@@ -83,15 +83,18 @@ public class WaveManager : MonoBehaviour
         yield return new WaitForSeconds(delaySeconds);
         for (int i = 0; i < wave.GetEnemyCount(); i++)
         {
-            SpawnMob(wave.GetNextEnemy(), wave.spawnLocation, i * wave.delayBetweenEnemies);
+            StartCoroutine(SpawnMob(wave.GetEnemy(i), wave.spawnLocation, i * wave.delayBetweenEnemies));
             currentWaveMobs++;
         }
+        remainingEnemiesUpdated.Invoke(currentWaveMobs);
 
     }
     IEnumerator SpawnMob(Enemy enemy, int location, float delay)
     {
         yield return new WaitForSeconds(delay);
+        
         CreateMobAtLocation(enemy, GetSpawnLocation(location));
+        Debug.Log("Spawning " + enemy.name);
     }
 
     Vector3 GetSpawnLocation(int id)
@@ -107,6 +110,6 @@ public class WaveManager : MonoBehaviour
     public void MobDeath()
     {
         currentWaveMobs--;
-        remainingEnemiesUpdated.Invoke(currentWaveMobs);
+        remainingEnemiesUpdated.Invoke(1);
     }
 }
