@@ -6,7 +6,6 @@ public class Wave : ScriptableObject
 {
     [SerializeField] Enemy[] enemies;
     public int delay = 0;
-    int currentEnemy = 0;
     public float delayBetweenEnemies = 0.5f;
     public int spawnLocation = 0;
 

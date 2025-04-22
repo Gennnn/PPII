@@ -13,6 +13,9 @@ public class gameManager : MonoBehaviour
     [SerializeField] GameObject menuWin;
     [SerializeField] GameObject menuLose;
 
+    public Shrine shrine;
+    [SerializeField] float shrineDispersionRadius = 8.0f;
+
     public bool isPaused;
 
     public GameObject player;
@@ -37,6 +40,8 @@ public class gameManager : MonoBehaviour
         player = GameObject.FindWithTag("Player");
         playerScript = player.GetComponent<playerController>();
 
+        shrine = GameObject.FindWithTag("Shrine").GetComponent<Shrine>();
+
         timeScaleOrig = Time.timeScale;
     }
 
@@ -59,7 +64,8 @@ public class gameManager : MonoBehaviour
     void MoveToNextRound()
     {
         roundIndex++;
-        if (roundIndex == rounds.Length)
+        Debug.Log("Round index: " + roundIndex);
+        if (roundIndex >= rounds.Length)
         {
             win();
             return;
@@ -156,5 +162,15 @@ public class gameManager : MonoBehaviour
         statePause();
         menuActive = menuLose;
         menuActive.SetActive(true);
+    }
+
+    public Vector3 GetShrineLocation()
+    {
+        return shrine.transform.position;
+    }
+
+    public Vector3 GetShrineLocationDispersed()
+    {
+        return new Vector3(UnityEngine.Random.Range(shrine.transform.position.x - shrineDispersionRadius, shrine.transform.position.x + shrineDispersionRadius), shrine.transform.position.y, UnityEngine.Random.Range(shrine.transform.position.y - shrineDispersionRadius, shrine.transform.position.y + shrineDispersionRadius));
     }
 }

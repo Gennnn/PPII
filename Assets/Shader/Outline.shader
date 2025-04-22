@@ -158,6 +158,7 @@ Shader "Outlined/Uniform"
             float _CurveMagnitudeY;
             float _PulseFrequency;
             float3 _GlowColor;
+            float3 _BackingColor;
             float _RotationX;
             float _RotationY;
             float _Perspective;
@@ -185,7 +186,7 @@ Shader "Outlined/Uniform"
                 uv.x = (uv.x - 0.5) / _GridXScale + 0.5 + _GridXOffset;
                 uv.y = (uv.y - 0.5) / _GridYScale + 0.5 + _GridYOffset;
                 if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1) {
-                    return fixed4(0,0,0,0);
+                    return fixed4(_BackingColor.rgb, 1.0);
                 }
 
                 // Convert degrees to radians
@@ -246,7 +247,12 @@ Shader "Outlined/Uniform"
                 uv.x = smoothstep(_LineWidth, _LineWidth, abs(uv.x));
                 uv.y = smoothstep(_LineWidth, _LineWidth, abs(uv.y));
 
-                return ( 1 - uv.x * uv.y) * (cos(_Time.y * _PulseFrequency) * 0.5 + 0.5 + _MinimumLuminance) * float4(_GlowColor, 1.0f) * _MaximumLuminance * depth;
+                float4 col = ( 1 - uv.x * uv.y) * (cos(_Time.y * _PulseFrequency) * 0.5 + 0.5 + _MinimumLuminance) * float4(_GlowColor, 1.0f) * _MaximumLuminance * depth;
+                if (dot(col.rgb, 1.0) > 0.0) {
+                    return col;
+                } else {
+                    return fixed4(_BackingColor.rgb, 1.0);
+                }
 
 
             }

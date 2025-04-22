@@ -89,6 +89,7 @@ Shader "Unlit/Grid"
             float _CurveMagnitudeY;
             float _PulseFrequency;
             float3 _GlowColor;
+            float3 _BackingColor;
             float _RotationX;
             float _RotationY;
             float _Perspective;
@@ -110,7 +111,7 @@ Shader "Unlit/Grid"
                 uv.x = (uv.x - 0.5) / _GridXScale + 0.5 + _GridXOffset;
                 uv.y = (uv.y - 0.5) / _GridYScale + 0.5 + _GridYOffset;
                 if (uv.x < 0 || uv.x > 1 || uv.y < 0 || uv.y > 1) {
-                    return fixed4(0,0,0,0);
+                    return _BackingColor;
                 }
 
                 // Convert degrees to radians
@@ -171,7 +172,12 @@ Shader "Unlit/Grid"
                 uv.x = smoothstep(_LineWidth, _LineWidth, abs(uv.x));
                 uv.y = smoothstep(_LineWidth, _LineWidth, abs(uv.y));
 
-                return ( 1 - uv.x * uv.y) * (cos(_Time.y * _PulseFrequency) * 0.5 + 0.5 + _MinimumLuminance) * float4(_GlowColor, 1.0f) * _MaximumLuminance * depth;
+                float4 col =  ( 1 - uv.x * uv.y) * (cos(_Time.y * _PulseFrequency) * 0.5 + 0.5 + _MinimumLuminance) * float4(_GlowColor, 1.0f) * _MaximumLuminance * depth;
+                if (col != 0) {
+                    return col;
+                } else {
+                    return fixed4(_BackingColor, 1.0f);
+                }
 
 
             }

@@ -12,17 +12,18 @@ public class WaveManager : MonoBehaviour
     public Round currentRound;
     gameManager gameManager;
 
-    int currentWaveInRound = 0;
     int currentWaveMobs = 0;
 
     float initialBuffer = 0.0f;
 
-    [SerializeField] List<Vector3> spawnLocations = new List<Vector3>();
+    [SerializeField] List<Spawn> spawnLocations = new List<Spawn>();
 
     Dictionary<Wave, Coroutine> pendingWaves = new Dictionary<Wave, Coroutine>();
 
     [System.NonSerialized] public UnityEvent<int> remainingEnemiesUpdated;
     [System.NonSerialized] public UnityEvent allMobsKilled;
+
+    bool roundActive = false;
 
     private void Awake()
     {
@@ -39,7 +40,7 @@ public class WaveManager : MonoBehaviour
     private void Update()
     {
         initialBuffer += Time.deltaTime;
-        if (initialBuffer >= 4.0f && currentWaveMobs <= 0 && pendingWaves.Count > 0)
+        if (initialBuffer >= 1.0f && currentWaveMobs <= 0 && pendingWaves.Count > 0)
         {
             Wave shortestWave = pendingWaves.Keys.OrderBy(w => w.delay).FirstOrDefault();
             if (shortestWave != null && pendingWaves.TryGetValue(shortestWave, out Coroutine coroutine))
@@ -48,14 +49,16 @@ public class WaveManager : MonoBehaviour
                 pendingWaves.Remove(shortestWave);
                 SpawnWave(shortestWave);
             }
-        } else if (currentWaveMobs <= 0 && pendingWaves.Count > 0)
+        } else if (currentWaveMobs <= 0 && pendingWaves.Count <= 0 && roundActive)
         {
             allMobsKilled.Invoke();
+            roundActive = false;
         }
     }
 
     public void StartRound()
     {
+        roundActive = true;
         for (int i = 0; i < currentRound.waves.Length; i++)
         {
             if (currentRound.waves[i].delay <= 0)
@@ -63,7 +66,8 @@ public class WaveManager : MonoBehaviour
                 SpawnWave(currentRound.waves[i]);
             } else
             {
-                StartCoroutine(SpawnWave(currentRound.waves[i], currentRound.waves[i].delay));
+                Coroutine c = StartCoroutine(SpawnWave(currentRound.waves[i], currentRound.waves[i].delay));
+                pendingWaves.Add(currentRound.waves[i], c);
             }
         }
     }
@@ -76,7 +80,6 @@ public class WaveManager : MonoBehaviour
             currentWaveMobs++;
             
         }
-        remainingEnemiesUpdated.Invoke(currentWaveMobs);
     }
     IEnumerator SpawnWave(Wave wave, int delaySeconds)
     {
@@ -86,7 +89,6 @@ public class WaveManager : MonoBehaviour
             StartCoroutine(SpawnMob(wave.GetEnemy(i), wave.spawnLocation, i * wave.delayBetweenEnemies));
             currentWaveMobs++;
         }
-        remainingEnemiesUpdated.Invoke(currentWaveMobs);
 
     }
     IEnumerator SpawnMob(Enemy enemy, int location, float delay)
@@ -94,17 +96,18 @@ public class WaveManager : MonoBehaviour
         yield return new WaitForSeconds(delay);
         
         CreateMobAtLocation(enemy, GetSpawnLocation(location));
-        Debug.Log("Spawning " + enemy.name);
+        //Debug.Log("Spawning " + enemy.name);
     }
 
-    Vector3 GetSpawnLocation(int id)
+    Spawn GetSpawnLocation(int id)
     {
         return spawnLocations[id];
     }
 
-    void CreateMobAtLocation(Enemy enemy, Vector3 position)
+    void CreateMobAtLocation(Enemy enemy, Spawn position)
     {
-        Instantiate(enemy, position, Quaternion.identity);
+        Instantiate(enemy, position.spawnPosition, Quaternion.identity);
+        enemy.SetAgentAreaCost(position.desiredArea, 1);
     }
 
     public void MobDeath()

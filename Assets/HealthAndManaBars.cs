@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
+using DG.Tweening;
 
 public class HealthAndManaBars : MonoBehaviour
 {
@@ -10,10 +11,13 @@ public class HealthAndManaBars : MonoBehaviour
     playerController playerController;
     [SerializeField] TextMeshProUGUI healthText;
     [SerializeField] TextMeshProUGUI manaText;
-    [SerializeField] Image healthBackingImage;
-    [SerializeField] Image manaBackingImage;
     [SerializeField] Slider healthSlider;
     [SerializeField] Slider manaSlider;
+
+    Tween healthValueTween;
+    Tween manaValueTween;
+
+    [SerializeField] float tweenSpeed = 0.25f;
 
     void Awake()
     {
@@ -36,15 +40,28 @@ public class HealthAndManaBars : MonoBehaviour
 
     void UpdateMana(int amount)
     {
-        manaSlider.value = (float)amount / (float)playerController.manaOrig;
-        manaText.text = amount.ToString();
-        manaBackingImage.color = new Color(manaBackingImage.color.r, manaBackingImage.color.g, manaBackingImage.color.b, (float)amount / (float)playerController.manaOrig);
+        if (manaValueTween != null)
+        {
+            manaValueTween.Kill(false);
+        }
+        manaValueTween = manaSlider.DOValue((float)amount / (float)playerController.manaOrig, tweenSpeed).OnComplete( () =>
+        {
+            manaValueTween = null;
+        });
+        
+        manaText.text = amount.ToString() +"/" + playerController.manaOrig;
     }
 
     void UpdateHealth(int amount)
     {
-        healthSlider.value = (float)amount / (float)playerController.HPOrig;
-        healthText.text = amount.ToString();
-        healthBackingImage.color = new Color(healthBackingImage.color.r, healthBackingImage.color.g, healthBackingImage.color.b, (float)amount / (float)playerController.HPOrig);
+        if (healthValueTween != null)
+        {
+            healthValueTween.Kill(false);
+        }
+        healthValueTween = healthSlider.DOValue((float)amount / (float)playerController.HPOrig, tweenSpeed).OnComplete(() =>
+        {
+            healthValueTween = null;
+        });
+        healthText.text = amount.ToString() +"/" + playerController.HPOrig;
     }
 }

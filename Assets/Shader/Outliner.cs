@@ -46,6 +46,7 @@ public class Outliner : MonoBehaviour {
     public float pulseFrequency = 0.8f;
 
     public Color glowColor = Color.white;
+    public Color backingColor = Color.black;
 
     [Range(-360.0f, 360.0f)]
     public float rotationX = 0.0f;
@@ -109,6 +110,7 @@ public class Outliner : MonoBehaviour {
         edgeMat.SetFloat("_CurveFrequencyY", curvatureYFrequency);
         edgeMat.SetFloat("_PulseFrequency", pulseFrequency);
         edgeMat.SetVector("_GlowColor", glowColor);
+        edgeMat.SetVector("_BackingColor", backingColor);
         edgeMat.SetFloat("_RotationX", rotationX);
         edgeMat.SetFloat("_RotationY", rotationY);
         edgeMat.SetFloat("_Perspective", perspective);

@@ -13,16 +13,9 @@ MonoBehaviour:
   m_Name: Round1.2
   m_EditorClassIdentifier: 
   enemies:
-  - {fileID: 5838862619219030402, guid: c9feeedd84a61f840afe3b350aaf1b28, type: 3}
-  - {fileID: 5838862619219030402, guid: c9feeedd84a61f840afe3b350aaf1b28, type: 3}
-  - {fileID: 5838862619219030402, guid: c9feeedd84a61f840afe3b350aaf1b28, type: 3}
-  - {fileID: 5838862619219030402, guid: c9feeedd84a61f840afe3b350aaf1b28, type: 3}
-  - {fileID: 5838862619219030402, guid: c9feeedd84a61f840afe3b350aaf1b28, type: 3}
-  - {fileID: 5838862619219030402, guid: c9feeedd84a61f840afe3b350aaf1b28, type: 3}
-  - {fileID: 5838862619219030402, guid: c9feeedd84a61f840afe3b350aaf1b28, type: 3}
-  - {fileID: 5838862619219030402, guid: c9feeedd84a61f840afe3b350aaf1b28, type: 3}
-  - {fileID: 5838862619219030402, guid: c9feeedd84a61f840afe3b350aaf1b28, type: 3}
-  - {fileID: 5838862619219030402, guid: c9feeedd84a61f840afe3b350aaf1b28, type: 3}
-  delay: 30
+  - {fileID: 3933725754284247634, guid: beb12a49a905d6b49b8ad2233c20d09b, type: 3}
+  - {fileID: 3933725754284247634, guid: beb12a49a905d6b49b8ad2233c20d09b, type: 3}
+  - {fileID: 3933725754284247634, guid: beb12a49a905d6b49b8ad2233c20d09b, type: 3}
+  delay: 0
   delayBetweenEnemies: 0.5
   spawnLocation: 1

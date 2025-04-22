@@ -50,6 +50,7 @@ public class ScrollingGridTex : MonoBehaviour
     public float pulseFrequency = 0.8f;
 
     public Color glowColor = Color.white;
+    public Color backingColor = Color.black;
 
     [Range(-360.0f, 360.0f)]
     public float rotationX = 0.0f;
@@ -86,7 +87,7 @@ public class ScrollingGridTex : MonoBehaviour
     {
         gridMat ??= new Material(gridShader);
         gridMat.hideFlags = HideFlags.HideAndDontSave;
-            gameObject.GetComponent<SkinnedMeshRenderer>().material = gridMat;
+        gameObject.GetComponent<Renderer>().material = gridMat;
         
         //gameObject.GetComponent<MeshRenderer>().material ??= gridMat;
         
@@ -112,6 +113,7 @@ public class ScrollingGridTex : MonoBehaviour
         gridMat.SetFloat("_CurveFrequencyY", curvatureYFrequency);
         gridMat.SetFloat("_PulseFrequency", pulseFrequency);
         gridMat.SetVector("_GlowColor", glowColor);
+        gridMat.SetVector("_BackingColor", backingColor);
         gridMat.SetFloat("_RotationX", rotationX);
         gridMat.SetFloat("_RotationY", rotationY);
         gridMat.SetFloat("_Perspective", perspective);
