@@ -13,12 +13,15 @@ public class ThrowerAI : Enemy
     [SerializeField] GameObject bullet;
     public float shootRange = 300.0f;
     public float maxShootDistance = 100.0f;
+    public float minShootDistance = 50.0f;
 
     public int damageAmount = 5;
     float attackCounter = 0.0f;
     public float attackSpeed = 2.0f;
 
     bool isAttacking = false;
+
+    [SerializeField] WaypointCategory cateogry = WaypointCategory.THROWER;
 
     private void Awake()
     {
@@ -28,15 +31,16 @@ public class ThrowerAI : Enemy
     private void Start()
     {
         currentAnimationState = idleAnimName;
+        WaypointManager.instance.RetrieveNearestWaypointWithMin(cateogry, gameManager.instance.player.transform.position, minShootDistance);
         base.Start();
     }
     protected override void Behavior()
     {
         attackCounter += Time.deltaTime;
 
-        agent.SetDestination(gameManager.instance.player.transform.position);
+        agent.SetDestination(GetTargetPosition());
 
-        faceTarget(playerDir);
+        faceTarget(lookDir);
 
         if (agent.velocity != Vector3.zero && currentAnimationState != runAnimName && !isAttacking)
         {
@@ -52,6 +56,11 @@ public class ThrowerAI : Enemy
             Debug.Log(name + " is attempting attack");
             AttemptAttack();
         }
+    }
+
+    void UpdateWaypoint()
+    {
+        
     }
 
     void AttemptAttack()

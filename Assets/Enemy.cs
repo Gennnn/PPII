@@ -29,7 +29,7 @@ public class Enemy : MonoBehaviour, IDamage
 
     [SerializeField] ParticleSystem hitParticles;
 
-    protected Vector3 playerDir;
+    protected Vector3 lookDir;
 
     int preferredRoute;
 
@@ -72,7 +72,7 @@ public class Enemy : MonoBehaviour, IDamage
             SetAgentAreaCost(preferredRoute, 1);
             
         }
-        playerDir = gameManager.instance.player.transform.position - transform.position;
+        lookDir = GetTargetPosition() - transform.position;
         Behavior();
     }
 
@@ -151,7 +151,7 @@ public class Enemy : MonoBehaviour, IDamage
         {
             return gameManager.instance.player.transform.position;
         }
-        else if (currentPursue == EnemyPursueGoal.WAYPOINT)
+        else if (currentPursue == EnemyPursueGoal.WAYPOINT && waypoint != null)
         {
             return waypoint;
         }

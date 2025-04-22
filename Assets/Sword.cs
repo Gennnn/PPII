@@ -10,6 +10,7 @@ public class Sword : Item
     float swingCooldown = 0f;
     public string swingAnimationName = "Sword_Swing";
     public string idleAnimationName = "Sword_Idle";
+    [SerializeField] ParticleSystem swingParticle;
     Coroutine idleCoroutine;
     void Start()
     {
@@ -60,5 +61,15 @@ public class Sword : Item
     public override void Secondary()
     {
         
+    }
+
+    void DoParticle()
+    {
+        Vector3 offsetPos = swingParticle.transform.position;
+        Quaternion offsetRot = swingParticle.transform.rotation;
+        Vector3 pos = transform.TransformPoint(offsetPos);
+        Quaternion rot = transform.rotation * offsetRot;
+
+        Instantiate(swingParticle, transform);
     }
 }

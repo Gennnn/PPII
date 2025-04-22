@@ -11,6 +11,9 @@ public enum WaypointCategory
 public class WaypointManager : MonoBehaviour
 {
     public static WaypointManager instance;
+
+    public List<Waypoint> inputWaypoints = new List<Waypoint>();
+
     public Dictionary<WaypointCategory, List<Waypoint>> waypoints = new Dictionary<WaypointCategory, List<Waypoint>>();
 
     private void Awake()
@@ -19,20 +22,14 @@ public class WaypointManager : MonoBehaviour
     }
     void Start()
     {
-        foreach (Transform child in  transform)
+        foreach (Waypoint w in inputWaypoints)
         {
-            if (child.GetComponent<Waypoint>() != null)
+            if (!waypoints.ContainsKey(w.category))
             {
-                if (TryGetComponent<Waypoint>(out Waypoint waypoint))
-                {
-                    if (!waypoints.ContainsKey(waypoint.category))
-                    {
-                        waypoints.Add(waypoint.category, new List<Waypoint> { waypoint});
-                    } else
-                    {
-                        waypoints[waypoint.category].Add(waypoint);
-                    }
-                }
+                waypoints.Add(w.category, new List<Waypoint> { w });
+            } else
+            {
+                waypoints[w.category].Add(w);
             }
         }
     }
@@ -42,29 +39,38 @@ public class WaypointManager : MonoBehaviour
         return waypoints[category];
     }
 
-    public Waypoint RetrieveNearestWaypoint(WaypointCategory category, Vector3 position) {
+    public Waypoint RetrieveNearestWaypoint(WaypointCategory category, Vector3 position, float maxRange = 0.0f, string layerMask = "Player") {
         List<Waypoint> cWaypoints = waypoints[category];
         if (cWaypoints == null || cWaypoints.Count == 0)
         {
             return null;
         } else if (cWaypoints.Count == 1)
         {
-            return cWaypoints[0];
+            if (maxRange <= 0) { return cWaypoints[0]; }
+            if (ValidRaycast(cWaypoints[0].position, position, maxRange, layerMask)) { return cWaypoints[0]; }
+            return null;
         } else
         {
-            Waypoint nearestWaypoint = cWaypoints[0];
+            Waypoint nearestWaypoint = null;
+            for (int i = 0; i < cWaypoints.Count; i++)
+            {
+                if (maxRange <= 0) { nearestWaypoint = cWaypoints[i]; break; }
+                if (ValidRaycast(cWaypoints[i].position, position, maxRange, layerMask)) { nearestWaypoint = cWaypoints[i]; break; }
+            }
+            if (nearestWaypoint == null) { return null; }
             for (int i = 1; i < cWaypoints.Count; i++)
             {
                 if (Vector3.Distance(position, cWaypoints[i].position) < Vector3.Distance(position, nearestWaypoint.position))
                 {
-                    nearestWaypoint = cWaypoints[i];
+                    if (maxRange <= 0) { nearestWaypoint = cWaypoints[i]; }
+                    if (ValidRaycast(cWaypoints[i].position, position, maxRange, layerMask)) { nearestWaypoint = cWaypoints[i]; }
                 }
             }
             return nearestWaypoint;
         }
     }
 
-    public Waypoint RetrieveFurthestWaypoint(WaypointCategory category, Vector3 position)
+    public Waypoint RetrieveFurthestWaypoint(WaypointCategory category, Vector3 position, float maxRange = 0.0f, string layerMask = "Player")
     {
         List<Waypoint> cWaypoints = waypoints[category];
         if (cWaypoints == null || cWaypoints.Count == 0)
@@ -73,23 +79,36 @@ public class WaypointManager : MonoBehaviour
         }
         else if (cWaypoints.Count == 1)
         {
-            return cWaypoints[0];
+            if (maxRange <= 0) { return cWaypoints[0]; }
+            if (ValidRaycast(cWaypoints[0].position, position, maxRange, layerMask)) { return cWaypoints[0]; }
+            return null;
         }
         else
         {
-            Waypoint furthestWaypoint = cWaypoints[0];
+            Waypoint furthestWaypoint = null;
+            for (int i = 0; i < cWaypoints.Count; i++)
+            {
+                if (maxRange <= 0) { furthestWaypoint = cWaypoints[i]; break; }
+                if (ValidRaycast(cWaypoints[i].position, position, maxRange, layerMask)) { furthestWaypoint = cWaypoints[i]; break; }
+            }
+            if (furthestWaypoint == null)
+            {
+                return null;
+            }
             for (int i = 1; i < cWaypoints.Count; i++)
             {
                 if (Vector3.Distance(position, cWaypoints[i].position) > Vector3.Distance(position, furthestWaypoint.position))
                 {
-                    furthestWaypoint = cWaypoints[i];
+                    if (maxRange <= 0) { furthestWaypoint = cWaypoints[i]; }
+                    if (ValidRaycast(cWaypoints[i].position, position, maxRange, layerMask)) { furthestWaypoint = cWaypoints[i]; }
+                    
                 }
             }
             return furthestWaypoint;
         }
     }
 
-    public Waypoint RetrieveFurthestWaypointInRange(WaypointCategory category, Vector3 position, float maxDistance)
+    public Waypoint RetrieveFurthestWaypointInRange(WaypointCategory category, Vector3 position, float maxDistance, float maxRange = 0.0f, string layerMask = "Player")
     {
         List<Waypoint> cWaypoints = waypoints[category];
         if (cWaypoints == null || cWaypoints.Count == 0)
@@ -100,7 +119,9 @@ public class WaypointManager : MonoBehaviour
         {
             if (Vector3.Distance(position, cWaypoints[0].position) <= maxDistance)
             {
-                return cWaypoints[0];
+                if (maxRange <= 0) { return cWaypoints[0]; }
+                if (ValidRaycast(cWaypoints[0].position, position, maxRange, layerMask)) { return cWaypoints[0]; }
+                
             }
             return null;
         }
@@ -111,8 +132,8 @@ public class WaypointManager : MonoBehaviour
             {
                 if (Vector3.Distance(position, cWaypoints[i].position) <= maxDistance)
                 {
-                    furthestWaypoint = cWaypoints[i];
-                    break;
+                    if (maxRange <= 0) { furthestWaypoint = cWaypoints[i]; break; }
+                    if (ValidRaycast(cWaypoints[i].position, position, maxRange, layerMask)) { furthestWaypoint = cWaypoints[i];  break; }                    
                 }
             }
             if (furthestWaypoint == null)
@@ -123,16 +144,18 @@ public class WaypointManager : MonoBehaviour
             {
                 if (Vector3.Distance(position, cWaypoints[i].position) > Vector3.Distance(position, furthestWaypoint.position) && Vector3.Distance(position, cWaypoints[i].position) <= maxDistance)
                 {
-                    furthestWaypoint = cWaypoints[i];
+                    if (maxRange <= 0) { furthestWaypoint = cWaypoints[i]; }
+                    if (ValidRaycast(cWaypoints[i].position, position, maxRange, layerMask)) { furthestWaypoint = cWaypoints[i]; }
                 }
             }
             return furthestWaypoint;
         }
     }
 
-    public Waypoint RetrieveNearestWaypointWithMin(WaypointCategory category, Vector3 position, float minDistance)
+    public Waypoint RetrieveNearestWaypointWithMin(WaypointCategory category, Vector3 position, float minDistance, float maxRange = 0.0f, string layerMask = "Player")
     {
         List<Waypoint> cWaypoints = waypoints[category];
+        
         if (cWaypoints == null || cWaypoints.Count == 0)
         {
             return null;
@@ -141,7 +164,8 @@ public class WaypointManager : MonoBehaviour
         {
             if (Vector3.Distance(position, cWaypoints[0].position) >= minDistance)
             {
-                return cWaypoints[0];
+                if (maxRange <= 0) { return cWaypoints[0]; }
+                if (ValidRaycast(cWaypoints[0].position, position, maxRange, layerMask)) { return cWaypoints[0]; }
             }
             return null;
         }
@@ -152,8 +176,9 @@ public class WaypointManager : MonoBehaviour
             {
                 if (Vector3.Distance(position, cWaypoints[i].position) >= minDistance)
                 {
-                    nearestWaypoint = cWaypoints[i];
-                    break;
+                    if (maxRange <= 0) { nearestWaypoint = cWaypoints[i]; break; }
+                    if (ValidRaycast(cWaypoints[i].position, position, maxRange, layerMask)) { nearestWaypoint = cWaypoints[i]; break; }
+                    
                 }
             }
             if (nearestWaypoint == null)
@@ -164,7 +189,9 @@ public class WaypointManager : MonoBehaviour
             {
                 if (Vector3.Distance(position, cWaypoints[i].position) < Vector3.Distance(position, nearestWaypoint.position) && Vector3.Distance(position, cWaypoints[i].position) >= minDistance)
                 {
-                    nearestWaypoint = cWaypoints[i];
+                    if (maxRange <= 0) { nearestWaypoint = cWaypoints[i]; }
+                    if (ValidRaycast(cWaypoints[i].position, position, maxRange, layerMask)) { nearestWaypoint = cWaypoints[i]; }
+                    
                 }
             }
             return nearestWaypoint;
@@ -183,5 +210,21 @@ public class WaypointManager : MonoBehaviour
         int index = Mathf.FloorToInt(percentile * (sortedWaypoints.Count - 1));
 
         return sortedWaypoints[index];
+    }
+
+    bool ValidRaycast(Vector3 waypointPosition, Vector3 targetPosition, float maxRange, string layerMask)
+    {
+        RaycastHit hit;
+        LayerMask mask = LayerMask.GetMask(layerMask);
+        Vector3 rayDir = (targetPosition - waypointPosition).normalized;
+        //Debug.DrawRay(transform.position, rayDir * shootRange, Color.red, 1.0f);
+        Vector3 castPoint = new Vector3(waypointPosition.x, waypointPosition.y + 3, waypointPosition.z);
+        if (Physics.Raycast(castPoint, rayDir, out hit, maxRange, mask))
+        {
+            return true;
+        } else
+        {
+            return false;
+        }
     }
 }

@@ -9,8 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d726433948d4ff49a0aa6849120d617, type: 3}
-  m_Name: SpawnD
+  m_Script: {fileID: 11500000, guid: 64472aadaaaced24e89308c617592fab, type: 3}
+  m_Name: F
   m_EditorClassIdentifier: 
-  spawnPosition: {x: 0.1, y: 40.33, z: 219.22}
-  desiredArea: 6
+  position: {x: -11.36, y: 7.02, z: -104}
+  dispersion: {x: 15, y: 1, z: 15}
+  category: 0

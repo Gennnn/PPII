@@ -35,9 +35,9 @@ public class ZombieAI : Enemy
             attackCounter += Time.deltaTime;
         }
 
-        agent.SetDestination(gameManager.instance.player.transform.position);
+        agent.SetDestination(GetTargetPosition());
 
-        faceTarget(playerDir);
+        faceTarget(lookDir);
 
         if (agent.velocity != Vector3.zero && currentAnimationState != runAnimName && !isAttacking)
         {
