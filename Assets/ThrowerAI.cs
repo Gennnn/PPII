@@ -19,27 +19,40 @@ public class ThrowerAI : Enemy
     float attackCounter = 0.0f;
     public float attackSpeed = 2.0f;
 
+    [SerializeField] float waypointPassDistance = 1.5f;
+
     bool isAttacking = false;
 
-    [SerializeField] WaypointCategory cateogry = WaypointCategory.THROWER;
+    [SerializeField] WaypointCategory category = WaypointCategory.THROWER;
+    Waypoint waypoint;
+    bool reachedWaypoint = false;
 
     private void Awake()
     {
-        Debug.Log($"{name}: {this.GetType().Name} Awake called. Enabled? {enabled}");
+        //Debug.Log($"{name}: {this.GetType().Name} Awake called. Enabled? {enabled}");
     }
 
     private void Start()
     {
         currentAnimationState = idleAnimName;
-        WaypointManager.instance.RetrieveNearestWaypointWithMin(cateogry, gameManager.instance.player.transform.position, minShootDistance);
+        waypoint = WaypointManager.instance.RetrieveNearestWaypointWithMin(category, gameManager.instance.player.transform.position, minShootDistance);
         base.Start();
     }
     protected override void Behavior()
     {
-        attackCounter += Time.deltaTime;
-
+        UpdateWaypoint();
+        HasReachedWaypoint();
+        
+        if (reachedWaypoint)
+        {
+            agent.isStopped = true;
+        } else
+        {
+            agent.isStopped = false;
+        }
         agent.SetDestination(GetTargetPosition());
 
+        attackCounter += Time.deltaTime;
         faceTarget(lookDir);
 
         if (agent.velocity != Vector3.zero && currentAnimationState != runAnimName && !isAttacking)
@@ -53,14 +66,31 @@ public class ThrowerAI : Enemy
 
         if (attackCounter >= attackSpeed && !isAttacking)
         {
-            Debug.Log(name + " is attempting attack");
+            //Debug.Log(name + " is attempting attack");
             AttemptAttack();
+        }
+    }
+
+    void HasReachedWaypoint()
+    {
+        if (!waypointReached && Vector3.Distance(transform.position, GetTargetPosition()) <= waypointPassDistance)
+        {
+            waypointReached = true;
+        } else if (waypointReached && Vector3.Distance(transform.position, GetTargetPosition()) > waypointPassDistance)
+        {
+            waypointReached = false;
         }
     }
 
     void UpdateWaypoint()
     {
-        
+        if (currentPursue == EnemyPursueGoal.PLAYER)
+        {
+            waypoint = WaypointManager.instance.RetrieveNearestWaypointWithMin(category, gameManager.instance.player.transform.position, minShootDistance, maxShootDistance, LayerMask.GetMask("Player"));
+        } else if (currentPursue == EnemyPursueGoal.SHRINE)
+        {
+            waypoint = WaypointManager.instance.RetrieveNearestWaypointWithMin(category, gameManager.instance.GetShrineLocationDispersed(), minShootDistance, maxShootDistance, LayerMask.GetMask("Shrine"));
+        }
     }
 
     void AttemptAttack()
