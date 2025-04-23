@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.UIElements;
 
 public class WaveManager : MonoBehaviour
 {
@@ -107,7 +108,13 @@ public class WaveManager : MonoBehaviour
     void CreateMobAtLocation(Enemy enemy, Spawn position)
     {
         Instantiate(enemy, position.spawnPosition, Quaternion.identity);
-        enemy.SetAgentAreaCost(position.desiredArea, 1);
+        //StartCoroutine(DelayedEnemyAgentCost(enemy, position.desiredArea));
+    }
+
+    IEnumerator DelayedEnemyAgentCost(Enemy enemy, int layer)
+    {
+        yield return new WaitForSeconds(1f);
+        enemy.SetAgentAreaCost(layer, 1);
     }
 
     public void MobDeath()

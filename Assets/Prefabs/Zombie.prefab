@@ -613,7 +613,7 @@ NavMeshAgent:
   m_Acceleration: 20
   avoidancePriority: 50
   m_AngularSpeed: 300
-  m_StoppingDistance: 10
+  m_StoppingDistance: 1.5
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
@@ -638,6 +638,12 @@ MonoBehaviour:
   moveSpeed: 20
   faceTargetSpeed: 300
   hitParticles: {fileID: 6899879436821699083, guid: 5fe208c1ca643ad46813fd8d69662944, type: 3}
+  shrinePreference: 0.19
+  aggressionThreshhold: 5
+  maxDisengageTime: 7.5
+  originalPursue: 0
+  headPos: {fileID: 7846070299427602325}
+  fov: 75
   idleAnimName: Zombie_Idle
   runAnimName: Zombie_Running
   attackAnimName: Zombie_Attack
@@ -652,6 +658,11 @@ Transform:
 --- !u!137 &6871749390265638514 stripped
 SkinnedMeshRenderer:
   m_CorrespondingSourceObject: {fileID: 7086879648351376527, guid: 77a7d3852be48144c8e9c8ec6cc28b41, type: 3}
+  m_PrefabInstance: {fileID: 4396917139079400189}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &7846070299427602325 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -3321919801592875672, guid: 77a7d3852be48144c8e9c8ec6cc28b41, type: 3}
   m_PrefabInstance: {fileID: 4396917139079400189}
   m_PrefabAsset: {fileID: 0}
 --- !u!1 &7995696854568679647 stripped

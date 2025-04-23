@@ -12,48 +12,41 @@ public class ThrowerAI : Enemy
     [SerializeField] Transform shootPos;
     [SerializeField] GameObject bullet;
     public float shootRange = 300.0f;
-    public float maxShootDistance = 100.0f;
-    public float minShootDistance = 50.0f;
+    public float maxShootDistance = 200.0f;
+    public float minShootDistance = 100.0f;
 
     public int damageAmount = 5;
     float attackCounter = 0.0f;
     public float attackSpeed = 2.0f;
 
-    [SerializeField] float waypointPassDistance = 1.5f;
-
     bool isAttacking = false;
 
     [SerializeField] WaypointCategory category = WaypointCategory.THROWER;
+    
+    bool waypointReached = false;
     Waypoint waypoint;
-    bool reachedWaypoint = false;
-
-    private void Awake()
-    {
-        //Debug.Log($"{name}: {this.GetType().Name} Awake called. Enabled? {enabled}");
-    }
 
     private void Start()
     {
         currentAnimationState = idleAnimName;
-        waypoint = WaypointManager.instance.RetrieveNearestWaypointWithMin(category, gameManager.instance.player.transform.position, minShootDistance);
+        
         base.Start();
+        pursueUpdating.AddListener(CheckForTargetChange);
+    }
+    private void OnDisable()
+    {
+        pursueUpdating.RemoveListener(CheckForTargetChange);
     }
     protected override void Behavior()
     {
-        UpdateWaypoint();
-        HasReachedWaypoint();
-        
-        if (reachedWaypoint)
+        if (!waypointReached && waypoint == null)
         {
-            agent.isStopped = true;
-        } else
-        {
-            agent.isStopped = false;
+            this.GetNewTarget();
         }
-        agent.SetDestination(GetTargetPosition());
-
+        
+        HasReachedWaypoint();
         attackCounter += Time.deltaTime;
-        faceTarget(lookDir);
+        
 
         if (agent.velocity != Vector3.zero && currentAnimationState != runAnimName && !isAttacking)
         {
@@ -64,57 +57,96 @@ public class ThrowerAI : Enemy
             ChangeAnimationState(idleAnimName);
         }
 
+        BehaviorSearch();
+        BehaviorAttack();
+    }
+
+    void BehaviorSearch()
+    {
+        if (waypointReached) return;
+        agent.isStopped = false;
+        agent.SetDestination(goalLocation);
+    }
+
+    void BehaviorAttack()
+    {
+        if (!waypointReached) return;
+        agent.isStopped = true;
+        if (currentPursue == EnemyPursueGoal.PLAYER)
+        {
+            goalLocation = gameManager.instance.player.transform.position;
+        }
+        faceTarget(lookDir);
         if (attackCounter >= attackSpeed && !isAttacking)
         {
-            //Debug.Log(name + " is attempting attack");
             AttemptAttack();
         }
     }
 
-    void HasReachedWaypoint()
+    void CheckForTargetChange(EnemyPursueGoal prevPursue)
     {
-        if (!waypointReached && Vector3.Distance(transform.position, GetTargetPosition()) <= waypointPassDistance)
+        if (prevPursue != currentPursue)
         {
-            waypointReached = true;
-        } else if (waypointReached && Vector3.Distance(transform.position, GetTargetPosition()) > waypointPassDistance)
-        {
+            GetNewTarget();
             waypointReached = false;
         }
     }
 
-    void UpdateWaypoint()
+    public override void GetNewTarget()
     {
         if (currentPursue == EnemyPursueGoal.PLAYER)
         {
-            waypoint = WaypointManager.instance.RetrieveNearestWaypointWithMin(category, gameManager.instance.player.transform.position, minShootDistance, maxShootDistance, LayerMask.GetMask("Player"));
-        } else if (currentPursue == EnemyPursueGoal.SHRINE)
-        {
-            waypoint = WaypointManager.instance.RetrieveNearestWaypointWithMin(category, gameManager.instance.GetShrineLocationDispersed(), minShootDistance, maxShootDistance, LayerMask.GetMask("Shrine"));
+            waypoint = WaypointManager.instance.RetrieveNearestWaypointWithMin(category, gameManager.instance.player.transform.position, minShootDistance, maxShootDistance, "Player");
+            goalLocation = waypoint.GetDispersedLocation();
         }
+        else if (currentPursue == EnemyPursueGoal.SHRINE)
+        {
+            waypoint = WaypointManager.instance.RetrieveNearestWaypointWithMin(category, gameManager.instance.GetShrineLocationDispersed(), minShootDistance,maxShootDistance, "Shrine");
+            goalLocation = waypoint.GetDispersedLocation();
+        }
+        Debug.Log("Got waypoint " + waypoint.name);
+    }
+
+    void HasReachedWaypoint()
+    {
+        float dist = Vector3.Distance(transform.position, goalLocation);
+        Debug.Log("Distance from waypoint is " + dist + " and agent stop dist is " + agent.stoppingDistance + " and state is " + waypointReached + " and isStopped is " + agent.isStopped);
+        if (!waypointReached && dist <= agent.stoppingDistance)
+        {
+            waypointReached = true;
+            Debug.Log("Reached waypoint " + waypoint.name);
+            waypoint = null;
+            goalLocation = currentPursue == EnemyPursueGoal.PLAYER ? gameManager.instance.player.transform.position : gameManager.instance.GetShrineLocation();
+            agent.velocity = Vector3.zero;
+            Debug.Log("Set goal location to " + goalLocation);
+        } 
     }
 
     void AttemptAttack()
     {
         RaycastHit hit;
-        LayerMask mask = LayerMask.GetMask("Player");
-        Vector3 rayDir = (gameManager.instance.player.transform.position - transform.position).normalized;
+        LayerMask mask = currentPursue == EnemyPursueGoal.PLAYER ? LayerMask.GetMask("Player") : LayerMask.GetMask("Shrine");
+        Vector3 rayDir = (goalLocation - transform.position).normalized;
+        Debug.Log("Attempting attack on " + currentPursue);
         //Debug.DrawRay(transform.position, rayDir * shootRange, Color.red, 1.0f);
-        if (Physics.Raycast(transform.position, rayDir, out hit, shootRange, mask) && Vector3.Distance(transform.position, gameManager.instance.player.transform.position) <= maxShootDistance && !isAttacking)
+        if (Physics.Raycast(transform.position, rayDir, out hit, shootRange, mask) && Vector3.Distance(transform.position, goalLocation) <= maxShootDistance && !isAttacking)
         {
             Attack();
-        } 
+        } else
+        {
+            Debug.Log("Didn't raycast " + currentPursue);
+        }
     }
 
     void Attack()
     {
         isAttacking = true;
-        agent.isStopped = true;
         ChangeAnimationState(attackAnimName);
     }
 
     void SpawnProjectile()
     {
-        Vector3 dir = (gameManager.instance.player.transform.position - shootPos.position).normalized;
+        Vector3 dir = (goalLocation - shootPos.position).normalized;
         Quaternion rot = Quaternion.LookRotation(dir);
         Instantiate(bullet, shootPos.position, rot);
     }
@@ -123,7 +155,6 @@ public class ThrowerAI : Enemy
     {
         isAttacking = false;
         attackCounter = 0;
-        agent.isStopped = false;
     }
 
 }

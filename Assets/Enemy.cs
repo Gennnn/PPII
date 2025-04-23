@@ -3,10 +3,12 @@ using System.Collections;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Experimental.Rendering;
+using UnityEngine.Events;
 
 public enum EnemyPursueGoal
 {
-    PLAYER, SHRINE, WAYPOINT
+    PLAYER, SHRINE
 }
 
 public class Enemy : MonoBehaviour, IDamage
@@ -41,22 +43,27 @@ public class Enemy : MonoBehaviour, IDamage
     Coroutine disengagementRoutine;
     protected EnemyPursueGoal currentPursue;
     [SerializeField] protected EnemyPursueGoal originalPursue = EnemyPursueGoal.SHRINE;
-    Vector3 waypoint;
+
+    public Transform headPos;
+    [SerializeField] float fov = 75.0f;
+
+    protected UnityEvent<EnemyPursueGoal> pursueUpdating; 
     void Awake()
     {
-        //Debug.Log($"{name}: Enemy Awake called. Enabled? {enabled}");
+        pursueUpdating = new UnityEvent<EnemyPursueGoal>();
     }
 
     protected void Start()
     {
         agent = gameObject.GetComponent<NavMeshAgent>();
         agent.speed = moveSpeed;
-        agent.updateRotation = false;
+        //agent.updateRotation = false;
         animator = GetComponent<Animator>();
         display = model.GetComponent<Outliner>();
         normalColor = display.backingColor;
         maxHealth = health;
         currentPursue = originalPursue;
+        GetNewTarget();
     }
 
     void Update()
@@ -64,15 +71,20 @@ public class Enemy : MonoBehaviour, IDamage
         focus -= (Time.deltaTime * shrinePreference);
         if (focus >= aggressionThreshhold && currentPursue != EnemyPursueGoal.PLAYER)
         {
+            EnemyPursueGoal prevPursue = currentPursue;
             currentPursue = EnemyPursueGoal.PLAYER;
+            pursueUpdating.Invoke(prevPursue);
             SetAgentAreaCost(preferredRoute, 1.1f);
+            GetNewTarget();
         } else if (focus < aggressionThreshhold && currentPursue == EnemyPursueGoal.PLAYER)
         {
-            currentPursue = originalPursue;
+            EnemyPursueGoal prevPursue = currentPursue;
+            currentPursue = EnemyPursueGoal.SHRINE;
+            pursueUpdating.Invoke(prevPursue);
             SetAgentAreaCost(preferredRoute, 1);
-            
+            GetNewTarget();
         }
-        lookDir = GetTargetPosition() - transform.position;
+        lookDir = goalLocation - transform.position;
         Behavior();
     }
 
@@ -140,28 +152,29 @@ public class Enemy : MonoBehaviour, IDamage
         disengagementRoutine = null;
     }
 
-    protected void SetWaypoint(Vector3 position)
-    {
-        waypoint = position;
-    }
-
-    public Vector3 GetTargetPosition()
+    public virtual void GetNewTarget()
     {
         if (currentPursue == EnemyPursueGoal.PLAYER)
         {
-            return gameManager.instance.player.transform.position;
-        }
-        else if (currentPursue == EnemyPursueGoal.WAYPOINT && waypoint != null)
-        {
-            return waypoint;
+            goalLocation = gameManager.instance.player.transform.position;
         }
         else {
-            return gameManager.instance.GetShrineLocationDispersed();
+            goalLocation = gameManager.instance.GetShrineLocationDispersed();
         }
     }
 
-
-
-
-
+    bool CanSeeTarget(string tag)
+    {
+        Vector3 dir = goalLocation - transform.position;
+        float angleToPlayer = Vector3.Angle(new Vector3(dir.x, 0, dir.z), transform.forward);
+        RaycastHit hit;
+        if (Physics.Raycast(headPos.position, dir, out hit))
+        {
+            if (hit.collider.CompareTag(tag) && angleToPlayer <= fov)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }

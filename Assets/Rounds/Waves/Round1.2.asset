@@ -14,8 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemies:
   - {fileID: 3933725754284247634, guid: beb12a49a905d6b49b8ad2233c20d09b, type: 3}
-  - {fileID: 3933725754284247634, guid: beb12a49a905d6b49b8ad2233c20d09b, type: 3}
-  - {fileID: 3933725754284247634, guid: beb12a49a905d6b49b8ad2233c20d09b, type: 3}
   delay: 0
   delayBetweenEnemies: 0.5
   spawnLocation: 1

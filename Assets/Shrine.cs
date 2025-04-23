@@ -20,14 +20,14 @@ public class Shrine : MonoBehaviour, IDamage
     {
         yield return new WaitForSeconds(regenRate);
         health += regenAmount;
-        Mathf.Clamp(health, 0, maxHealth);
+        health = Mathf.Clamp(health, 0, maxHealth);
         StartCoroutine(Regen());
     }
 
     public void takeDamage(int amount)
     {
         health -= amount;
-        Mathf.Clamp(health, 0, maxHealth);
+        health = Mathf.Clamp(health, 0, maxHealth);
         if (health <= 0)
         {
             gameManager.instance.youLose();

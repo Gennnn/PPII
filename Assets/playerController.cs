@@ -5,7 +5,7 @@ using UnityEngine.AI;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 
-public class playerController : MonoBehaviour, IDamage
+public class playerController : MonoBehaviour, IDamage, IPickup
 {
     public LayerMask ignoreLayer;
     public CharacterController characterController;
@@ -178,4 +178,41 @@ public class playerController : MonoBehaviour, IDamage
         yield return new WaitForSeconds(secondsToRegen);
         StartCoroutine(ManaRegen(regenAmount, secondsToRegen));
     }
+
+    public void GetGunStats(GunStats gun)
+    {
+        //gunList.Add(gun);
+        //gunListPos = gunList.Count - 1;
+        //ChangeGun(gun);
+    }
+
+    /*void SelectGun()
+    {
+        if (Input.GetAxis("Mouse ScrollWheel") > 0 && gunListPos < gunList.Count -1)
+        {
+            gunListPos++;
+        } else if (Input.GetAxis("Mouse ScrollWheel") < 0 && gunListPos > 0)
+        {
+            gunListPos--;
+        }
+    }*/
+
+    /*void ChangeGun()
+    {
+        //shootDamage = gun.shootDamage;
+        //shootDist = gun.shootDist;
+        //shootRate = gun.shootRate;
+
+        //gunModel.GetComponent<MeshFilter>().sharedMesh = gun.model.GetComponent<MeshFilter>().sharedMesh;
+        //gunModel.GetComponent<MeshRenderer>().sharedMaterial = gun.model.GetComponent<MeshRenderer>().sharedMaterial;
+    }*/
+
+    /*void Reload()
+    {
+        if (Input.GetButtonDown("Reload") && gunList.Count > 0)
+        {
+            gunList[gunListPos].ammoCur = gunList[gunListPos].ammoMax;
+            updatePlayerUI();
+        }
+    }*/
 }

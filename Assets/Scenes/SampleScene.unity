@@ -4311,6 +4311,7 @@ MonoBehaviour:
   roundNum: {fileID: 624019721}
   enemiesRemainingNum: {fileID: 1396242766}
   enemiesRemainingLabel: {fileID: 1205072456}
+  currencyNum: {fileID: 0}
   timeBetweenRounds: 3
 --- !u!4 &1038162097
 Transform:

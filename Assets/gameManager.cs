@@ -32,6 +32,8 @@ public class gameManager : MonoBehaviour
     public TextMeshProUGUI enemiesRemainingNum;
     public TextMeshProUGUI enemiesRemainingLabel;
 
+    public TextMeshProUGUI currencyNum;
+
     [SerializeField] int timeBetweenRounds = 30;
 
     void Awake()
@@ -91,6 +93,11 @@ public class gameManager : MonoBehaviour
         int curr = Int32.Parse(enemiesRemainingNum.text);
         curr -= num;
         enemiesRemainingNum.text = curr.ToString();
+    }
+
+    void UpdateCurrencyNum(int num)
+    {
+        currencyNum.text = num.ToString();
     }
 
     IEnumerator UpdateTimeTilRoundDisplay(int delay)

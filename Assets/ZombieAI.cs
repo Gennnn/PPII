@@ -17,11 +17,6 @@ public class ZombieAI : Enemy
 
     bool isAttacking = false;
 
-    private void Awake()
-    {
-        //Debug.Log($"{name}: {this.GetType().Name} Awake called. Enabled? {enabled}");
-    }
-
     private void Start()
     {
         currentAnimationState = idleAnimName;
@@ -35,7 +30,7 @@ public class ZombieAI : Enemy
             attackCounter += Time.deltaTime;
         }
 
-        agent.SetDestination(GetTargetPosition());
+        agent.SetDestination(goalLocation);
 
         faceTarget(lookDir);
 
